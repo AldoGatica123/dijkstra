@@ -14,7 +14,7 @@ First run distance_table.py to generate a csv file containing the distances betw
 ```commandline
 python distance_table.py
 ```
-Then run the web application.
+When the distances file is generated, then run the web application.
 ```commandline
 python dijkstra.py
 ```
