@@ -19,6 +19,15 @@ When the distances file is generated, then run the web application.
 python dijkstra.py
 ```
 
+### Routes
+```text
+/index.html
+/airport/<code>
+/search/<search>
+/route/<origin>/<destination>/<int:range>
+```
+
+
 ### csv format for the locations
 ```csv
 LocationID,State,County,City,FacilityName,Latitude,Longitude

@@ -61,8 +61,8 @@ def search(search):
     return flask.jsonify(results)
 
 
-@app.route("/route/<origin>/<destination>/<int:range>")
-def route(origin, destination, range):
+@app.route("/route/<origin>/<destination>/<int:_range>")
+def route(origin, destination, _range):
     items_count = 4515
     row_index = 0
 
@@ -72,17 +72,17 @@ def route(origin, destination, range):
         for row in reader:
             row_index += 1
             if row_index % 100 == 0:
-                print("Creating graph for range " + str(range) + "... " + str(
+                print("Creating graph for range " + str(_range) + "... " + str(
                     round((row_index / items_count) * 100, 2)) + "%", file=sys.stderr)
             for code in row:
-                if code != 'id' and float(row[code]) < range:
+                if code != 'id' and float(row[code]) < _range:
                     edges.append((row['id'], code, float(row[code])))
 
-    print("Calculating Route from " + origin + " to " + destination + " for range " + str(range) + " miles...",
+    print("Calculating Route from " + origin + " to " + destination + " for range " + str(_range) + " miles...",
           file=sys.stderr)
     rt = dijkstra(edges, origin, destination)
 
-    print("Route from " + origin + " to " + destination + " for range " + str(range) + " miles.", file=sys.stderr)
+    print("Route from " + origin + " to " + destination + " for range " + str(_range) + " miles.", file=sys.stderr)
 
     return flask.jsonify(rt)
 
