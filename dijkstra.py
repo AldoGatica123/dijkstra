@@ -8,8 +8,14 @@ from flask import Flask
 from flask import send_from_directory
 
 
-# This is a Python implementation of Dijkstra's algorithm that is using a heap instead of recursion.
-# Many implementations use recursion, but the scope of this app with millions of possible edges made using recursion impractical.
+app = Flask(__name__, static_folder='static')
+
+
+@app.route('/<path:filename>')
+def send_file(filename):
+    return send_from_directory(app.static_folder, filename)
+
+
 def dijkstra(edges, f, t):
     g = defaultdict(list)
     for l, r, c in edges:
@@ -30,18 +36,6 @@ def dijkstra(edges, f, t):
     return float("inf")
 
 
-# Sets the app up for running static content.
-app = Flask(__name__, static_folder='static')
-
-
-# This is the route for static content used by Flask
-@app.route('/<path:filename>')
-def send_file(filename):
-    return send_from_directory(app.static_folder, filename)
-
-
-# This route takes an airport code and returns information for that code as JSON
-# The <code> paramter is passed in the URL so Altanta (ATL) would be /airport/ATL
 @app.route("/airport/<code>")
 def airport(code):
     with open('airports.csv') as csvfile:
@@ -53,8 +47,6 @@ def airport(code):
     return flask.jsonify(None)
 
 
-# This method searches the airport list for a match for the search string.
-# The <search> paramter is passed in the URL so Altanta (ATL) would be /search/ATL
 @app.route("/search/<search>")
 def search(search):
     results = []
@@ -69,28 +61,26 @@ def search(search):
     return flask.jsonify(results)
 
 
-# This route takes two airport codes a -- The origin and destination -- and a range and returns the route information.
-# For Atlanta to New Orleans with a range of 200 miles, the url would be /route/ATL/MSY/200.
 @app.route("/route/<origin>/<destination>/<int:range>")
 def route(origin, destination, range):
-    airportCount = 4515
-    rowIdx = 0
+    items_count = 4515
+    row_index = 0
 
     edges = []
-    with open('airports.csv') as csvfile:
+    with open('airports-distance.csv') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            rowIdx += 1
-            if rowIdx % 100 == 0:
+            row_index += 1
+            if row_index % 100 == 0:
                 print("Creating graph for range " + str(range) + "... " + str(
-                    round((rowIdx / airportCount) * 100, 2)) + "%", file=sys.stderr)
+                    round((row_index / items_count) * 100, 2)) + "%", file=sys.stderr)
             for code in row:
-                if code != 'id' and float(row[code]) < range:  # compares the distance between two airports. If less than the range, it adds this as a possible segment in a route in the graph.
+                if code != 'id' and float(row[code]) < range:
                     edges.append((row['id'], code, float(row[code])))
 
     print("Calculating Route from " + origin + " to " + destination + " for range " + str(range) + " miles...",
           file=sys.stderr)
-    rt = dijkstra(edges, origin, destination)  # Calls the Dijkstra's algorithm to calculate the shortest route.
+    rt = dijkstra(edges, origin, destination)
 
     print("Route from " + origin + " to " + destination + " for range " + str(range) + " miles.", file=sys.stderr)
 
@@ -98,4 +88,4 @@ def route(origin, destination, range):
 
 
 if __name__ == "__main__":
-    app.run(host="localhost", port=5000, threaded=True, debug=True)
+    app.run(host="localhost", port=5000, threaded=True)
